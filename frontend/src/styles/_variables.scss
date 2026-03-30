@@ -1,7 +1,55 @@
-$bg-dark: #111;
-$card-bg: #1c1c1c;
-$primary: #10b981;
-$secondary: #2563eb;
-$text-light: #fff;
-$text-muted: #9ca3af;
-$error: #ef4444;
+// ─── COLOR TOKENS ───────────────────────────────────────────────────────────
+$primary:        #00D4FF;
+$primary-dim:    rgba(0, 212, 255, 0.12);
+$primary-glow:   rgba(0, 212, 255, 0.25);
+
+$bg-base:        #0A0C10;
+$bg-surface:     #0F1117;
+$bg-card:        rgba(15, 17, 23, 0.72);
+$bg-input:       rgba(255, 255, 255, 0.04);
+$bg-input-focus: rgba(0, 212, 255, 0.06);
+
+$border-default: rgba(255, 255, 255, 0.08);
+$border-focus:   rgba(0, 212, 255, 0.5);
+$border-card:    rgba(255, 255, 255, 0.06);
+
+$text-primary:   #F0F2F5;
+$text-secondary: #8B9099;
+$text-muted:     #555B66;
+$text-label:     #9CA3AF;
+
+$success:        #22C55E;
+$warning:        #F59E0B;
+$error:          #F87171;
+$error-dim:      rgba(248, 113, 113, 0.12);
+
+$orb-1:          rgba(0, 212, 255, 0.08);
+$orb-2:          rgba(99, 102, 241, 0.06);
+
+// ─── TYPOGRAPHY ─────────────────────────────────────────────────────────────
+$font-sans:      'DM Sans', system-ui, sans-serif;
+$font-display:   'Syne', system-ui, sans-serif;
+
+$text-xs:   0.75rem;
+$text-sm:   0.8125rem;
+$text-base: 0.9375rem;
+$text-lg:   1.0625rem;
+$text-xl:   1.25rem;
+$text-2xl:  1.5rem;
+$text-3xl:  1.875rem;
+
+// ─── SPACING ────────────────────────────────────────────────────────────────
+$radius-sm:  6px;
+$radius-md:  10px;
+$radius-lg:  16px;
+$radius-xl:  24px;
+
+// ─── SHADOWS ────────────────────────────────────────────────────────────────
+$shadow-card:  0 0 0 1px #{$border-card}, 0 24px 64px rgba(0,0,0,0.5), 0 8px 24px rgba(0,0,0,0.3);
+$shadow-input: 0 0 0 2px #{$border-focus};
+$shadow-btn:   0 0 20px rgba(0, 212, 255, 0.3);
+
+// ─── TRANSITIONS ────────────────────────────────────────────────────────────
+$trans-fast:   150ms ease;
+$trans-base:   220ms ease;
+$trans-slow:   380ms cubic-bezier(0.4, 0, 0.2, 1);

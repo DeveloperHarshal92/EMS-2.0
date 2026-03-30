@@ -1,55 +1,290 @@
 @use "@/styles/variables" as *;
 @use "@/styles/mixins" as *;
+
+// ─── PAGE ─────────────────────────────────────────────────────────────────────
 .login {
-  height: 100vh;
-  @include flex-center;
+  @include auth-page;
+  @include dot-grid;
 
-  &__card {
-    background: $card-bg;
-    padding: 2rem;
-    border-radius: 12px;
-    width: 350px;
-    color: $text-light;
-  }
+  // ambient orbs
+  &__orb {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(80px);
 
-  &__title {
-    text-align: center;
-    margin-bottom: 1.5rem;
-  }
+    &--1 {
+      width: 480px;
+      height: 480px;
+      top: -180px;
+      right: -120px;
+      background: $orb-1;
+    }
 
-  &__input {
-    @include input-style;
-    margin-bottom: 1rem;
-  }
-
-  &__btn {
-    width: 100%;
-    padding: 10px;
-    background: $primary;
-    border: none;
-    border-radius: 6px;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-
-    &:disabled {
-      opacity: 0.6;
+    &--2 {
+      width: 360px;
+      height: 360px;
+      bottom: -140px;
+      left: -80px;
+      background: $orb-2;
     }
   }
+}
 
-  &__error {
-    color: $error;
-    text-align: center;
-    margin-top: 10px;
+// ─── CARD ─────────────────────────────────────────────────────────────────────
+.login__card {
+  @include glass-card;
+  @include flex-col;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 420px;
+  padding: 2.75rem 2.5rem;
+  border-radius: $radius-xl;
+  gap: 0;
+
+  // entry animation
+  animation: cardIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
   }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
 
-  &__link {
-    text-align: center;
-    margin-top: 1rem;
-    color: $text-muted;
+// ─── HEADER ───────────────────────────────────────────────────────────────────
+.login__brand {
+  @include flex-col;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  gap: 0.25rem;
+}
 
-    a {
-      color: $primary;
+.login__eyebrow {
+  font-size: $text-xs;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: $primary;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &::before {
+    content: '';
+    display: inline-block;
+    width: 18px;
+    height: 1.5px;
+    background: $primary;
+    border-radius: 2px;
+  }
+}
+
+.login__title {
+  font-family: $font-display;
+  font-size: $text-2xl;
+  font-weight: 600;
+  color: $text-primary;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.login__subtitle {
+  font-size: $text-sm;
+  color: $text-secondary;
+  margin: 0;
+  margin-top: 0.25rem;
+}
+
+// ─── FORM ────────────────────────────────────────────────────────────────────
+.login__form {
+  @include flex-col;
+  gap: 1rem;
+}
+
+// ─── FIELD ───────────────────────────────────────────────────────────────────
+.field {
+  @include flex-col;
+  gap: 0.4rem;
+}
+
+.field__label {
+  font-size: $text-xs;
+  font-weight: 500;
+  color: $text-label;
+  letter-spacing: 0.03em;
+}
+
+.field__wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.field__input {
+  @include field-input;
+  padding-left: 2.75rem;
+
+  &--error {
+    border-color: $error;
+
+    &:focus {
+      box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.12);
+    }
+  }
+}
+
+.field__icon {
+  position: absolute;
+  left: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: $text-muted;
+  pointer-events: none;
+  transition: color $trans-base;
+  display: flex;
+  align-items: center;
+
+  .field__input:focus ~ & {
+    color: $primary;
+  }
+}
+
+// icon reacts to sibling focus via parent trick
+.field__wrapper:focus-within .field__icon {
+  color: $primary;
+}
+
+.field__toggle {
+  position: absolute;
+  right: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $text-muted;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  transition: color $trans-base;
+
+  &:hover {
+    color: $text-secondary;
+  }
+}
+
+.field__error {
+  font-size: $text-xs;
+  color: $error;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+// ─── ACTIONS ─────────────────────────────────────────────────────────────────
+.login__actions {
+  @include flex-between;
+  margin-top: 0.25rem;
+}
+
+.login__forgot {
+  font-size: $text-xs;
+  color: $text-secondary;
+  text-decoration: none;
+  transition: color $trans-fast;
+  margin-left: auto;
+
+  &:hover {
+    color: $primary;
+  }
+}
+
+// ─── SUBMIT ───────────────────────────────────────────────────────────────────
+.login__submit {
+  @include btn-primary;
+  margin-top: 0.5rem;
+
+  .spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(0,0,0,0.25);
+    border-top-color: #000;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// ─── ALERT BANNER ─────────────────────────────────────────────────────────────
+.login__alert {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: $radius-md;
+  font-size: $text-xs;
+  font-weight: 500;
+  animation: alertIn 0.2s ease both;
+
+  &--error {
+    background: $error-dim;
+    border: 1px solid rgba(248,113,113,0.22);
+    color: $error;
+  }
+}
+
+@keyframes alertIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ─── DIVIDER ──────────────────────────────────────────────────────────────────
+.login__divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.25rem 0;
+  color: $text-muted;
+  font-size: $text-xs;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: $border-default;
+  }
+}
+
+// ─── FOOTER ───────────────────────────────────────────────────────────────────
+.login__footer {
+  text-align: center;
+  font-size: $text-xs;
+  color: $text-muted;
+  margin-top: 1.5rem;
+
+  a {
+    color: $primary;
+    text-decoration: none;
+    font-weight: 500;
+    transition: opacity $trans-fast;
+
+    &:hover {
+      opacity: 0.8;
     }
   }
 }

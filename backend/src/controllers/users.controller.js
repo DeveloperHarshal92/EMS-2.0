@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 // REGISTER
 export async function registerUser(req, res) {
   try {
-    const { fname, email, password } = req.body;
+    const { fname, email, password , role } = req.body;
 
     if (!fname) {
       return res.status(400).json({
@@ -29,6 +29,7 @@ export async function registerUser(req, res) {
       fname,
       email,
       password: passwordHash,
+      role: role || "employee",
     });
 
     res.status(201).json({
@@ -38,6 +39,7 @@ export async function registerUser(req, res) {
         id: user._id,
         email: user.email,
         fname: user.fname,
+        role: user.role,
       },
     });
 
@@ -91,6 +93,7 @@ export async function loginUser(req, res) {
       user: {
         id: user._id,
         email: user.email,
+        role: user.role,
       },
     });
 

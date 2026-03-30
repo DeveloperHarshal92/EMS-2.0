@@ -1,15 +1,118 @@
+@use 'variables' as *;
+
+// ─── LAYOUT ─────────────────────────────────────────────────────────────────
 @mixin flex-center {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-@mixin input-style {
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+// ─── GLASS CARD ──────────────────────────────────────────────────────────────
+@mixin glass-card {
+  background: $bg-card;
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid $border-card;
+  box-shadow: $shadow-card;
+}
+
+// ─── FIELD ───────────────────────────────────────────────────────────────────
+@mixin field-input {
   width: 100%;
-  padding: 12px;
-  border-radius: 6px;
-  background: black;
-  border: 1px solid #444;
-  color: white;
+  background: $bg-input;
+  border: 1px solid $border-default;
+  border-radius: $radius-md;
+  color: $text-primary;
+  font-family: $font-sans;
+  font-size: $text-sm;
+  padding: 0.75rem 1rem;
   outline: none;
+  transition: border-color $trans-base, background $trans-base, box-shadow $trans-base;
+
+  &::placeholder {
+    color: $text-muted;
+    font-size: $text-sm;
+  }
+
+  &:focus {
+    border-color: $border-focus;
+    background: $bg-input-focus;
+    box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+  }
+}
+
+// ─── BUTTON ──────────────────────────────────────────────────────────────────
+@mixin btn-primary {
+  position: relative;
+  width: 100%;
+  padding: 0.8125rem 1.5rem;
+  background: $primary;
+  color: #000;
+  font-family: $font-sans;
+  font-size: $text-sm;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: none;
+  border-radius: $radius-md;
+  cursor: pointer;
+  overflow: hidden;
+  transition: opacity $trans-base, box-shadow $trans-base, transform $trans-fast;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.22) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity $trans-base;
+  }
+
+  &:hover:not(:disabled) {
+    box-shadow: $shadow-btn;
+    transform: translateY(-1px);
+
+    &::after { opacity: 1; }
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+// ─── AUTH PAGE WRAPPER ───────────────────────────────────────────────────────
+@mixin auth-page {
+  min-height: 100vh;
+  background: $bg-base;
+  @include flex-center;
+  position: relative;
+  overflow: hidden;
+  font-family: $font-sans;
+}
+
+// ─── DOT GRID ────────────────────────────────────────────────────────────────
+@mixin dot-grid {
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 28px 28px;
+    pointer-events: none;
+  }
 }
