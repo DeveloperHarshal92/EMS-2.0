@@ -132,3 +132,12 @@ export async function getUserDetails(req, res) {
   }
 }
 
+// LOGOUT 
+export const logoutUser = (req, res) => {
+  res.clearCookie("token");
+
+  res.status(200).json({
+    message: "Logged out successfully",
+    success: true,
+  });
+};

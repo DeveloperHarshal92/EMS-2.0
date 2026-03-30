@@ -20,7 +20,7 @@ app.use(cookieParser())
 app.use(morgan("dev"))
 
 // Routes
-app.use("api/auth",userRouter)
-app.use("api/tasks",taskRouter)
+app.use("/api/auth",userRouter)
+app.use("/api/tasks",taskRouter)
 
 export default app

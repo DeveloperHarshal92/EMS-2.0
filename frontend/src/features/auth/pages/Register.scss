@@ -1,0 +1,51 @@
+@use "@/styles/variables" as *;
+@use "@/styles/mixins" as *;
+.register {
+  height: 100vh;
+  @include flex-center;
+
+  &__card {
+    background: $card-bg;
+    padding: 2rem;
+    border-radius: 12px;
+    width: 350px;
+    color: $text-light;
+  }
+
+  &__title {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  &__input {
+    @include input-style;
+    margin-bottom: 1rem;
+  }
+
+  &__btn {
+    width: 100%;
+    padding: 10px;
+    background: $secondary;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  &__error {
+    color: $error;
+    text-align: center;
+    margin-top: 10px;
+  }
+
+  &__link {
+    text-align: center;
+    margin-top: 1rem;
+    color: $text-muted;
+
+    a {
+      color: $secondary;
+    }
+  }
+}
