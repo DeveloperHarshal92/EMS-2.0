@@ -1,7 +1,30 @@
-@import "./variables.scss";
-@import "./mixins.scss";
+// ─── EMS 3.0 — Global Entry Point ───────────────────────────────────────────
+// Imports Google Fonts, emits :root CSS custom properties (via _variables),
+// and sets base body/html styles.
+
+@use './variables' as *;   // emits :root { } and [data-theme="light"] { }
+@use './mixins' as *;
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=Syne:wght@400;600;700;800&display=swap');
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+}
 
 body {
-  background: $bg-dark;
-  font-family: Arial, sans-serif;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: $font-sans;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+a { text-decoration: none; }
+button { font-family: inherit; }
