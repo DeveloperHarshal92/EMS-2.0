@@ -22,3 +22,26 @@ export function authUser(req, res, next) {
     });
   }
 }
+
+export function authorizeRole(...roles) {
+  return async (req, res, next) => {
+    try {
+      // req.user is populated by authUser above
+      const user = await userModel.findById(req.user.id).select("role");
+
+      if (!user || !roles.includes(user.role)) {
+        return res.status(403).json({
+          message: "Forbidden: insufficient permissions",
+          success: false,
+        });
+      }
+
+      next();
+    } catch (err) {
+      return res.status(500).json({
+        message: "Authorization check failed",
+        success: false,
+      });
+    }
+  };
+}

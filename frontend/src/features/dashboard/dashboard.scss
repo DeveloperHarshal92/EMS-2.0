@@ -1213,6 +1213,67 @@
     font-weight: 500;
   }
 }
+// ── Textarea wrapper (icon + textarea side-by-side) ──────────────────────────
+.modal__textarea-wrap {
+  position: relative;
+ 
+  .modal__textarea-icon {
+    position: absolute;
+    left:     0.75rem;
+    top:      0.65rem;
+    color:    var(--text-muted);
+    pointer-events: none;
+    display:  flex;
+ 
+    svg { width: 14px; height: 14px; }
+  }
+ 
+  .modal__textarea {
+    width:        100%;
+    min-height:   88px;
+    padding:      0.62rem 0.85rem 0.62rem 2.1rem;
+    background:   var(--input-bg, rgba(255, 255, 255, 0.05));
+    border:       1px solid var(--border);
+    border-radius: 8px;
+    color:        var(--text-primary);
+    font-size:    0.875rem;
+    font-family:  inherit;
+    line-height:  1.55;
+    resize:       vertical;
+    outline:      none;
+    transition:   border-color 0.15s;
+ 
+    &::placeholder { color: var(--text-muted); }
+ 
+    &:focus {
+      border-color: var(--accent);
+      box-shadow:   0 0 0 3px var(--accent-glow);
+    }
+ 
+    &.modal__input--error {
+      border-color: var(--error);
+ 
+      &:focus { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15); }
+    }
+  }
+}
+ 
+// ── Footer row below description (error left, char-count right) ──────────────
+.modal__field-footer {
+  display:         flex;
+  justify-content: space-between;
+  align-items:     flex-start;
+  margin-top:      0.3rem;
+  min-height:      1.1rem;
+}
+ 
+.modal__char-count {
+  font-size:   0.68rem;
+  color:       var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  margin-left: auto;
+}
 
 // ── Tooltip ───────────────────────────────────────────────────────────────────
 [data-tooltip] {

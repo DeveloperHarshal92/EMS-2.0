@@ -1,129 +1,74 @@
 // src/features/tasks/tasks.slice.js
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { fetchAllTasks, createTask, updateTaskStatus } from "./services/tasks.api";
-
-// ── Async Thunks ──────────────────────────────────────────────────────────────
+import { createSlice } from "@reduxjs/toolkit";
 
 /**
- * Fetch all tasks from the API.
- * Optionally pass { assigneeId } to filter by employee.
+ * Normalises a raw task from the API into a consistent shape
+ * for the UI layer.
+ *
+ * Backend stores status as four boolean flags:
+ *   newTask | active | completed | failed
+ * We collapse them into a single `status` string here so components
+ * don't need to know about the boolean representation.
  */
-export const fetchTasksThunk = createAsyncThunk(
-  "tasks/fetchAll",
-  async (params = {}, { rejectWithValue }) => {
-    try {
-      const data = await fetchAllTasks(params);
-      return data.tasks;
-    } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to load tasks");
-    }
-  }
-);
+export function normaliseTask(raw) {
+  let status = "new";
+  if (raw.active)    status = "active";
+  if (raw.completed) status = "done";
+  if (raw.failed)    status = "failed";
+  if (raw.newTask && !raw.active && !raw.completed && !raw.failed) status = "new";
 
-/**
- * Create a new task.
- * payload: { title, category, assigneeId, dueDate }
- */
-export const createTaskThunk = createAsyncThunk(
-  "tasks/create",
-  async (payload, { rejectWithValue }) => {
-    try {
-      const data = await createTask(payload);
-      return data.task;
-    } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to create task");
-    }
-  }
-);
+  return {
+    _id:          raw._id,
+    title:        raw.title        ?? "",
+    description:  raw.description  ?? "",   // ← preserved from API
+    category:     raw.category     ?? "",
+    dueDate:      raw.date         ?? "",   // backend field is `date`
+    assigneeName: raw.assigneeName ?? "",
+    status,
+  };
+}
 
-/**
- * Patch a task's status.
- * Pass { taskId, status } — status: "new" | "active" | "done" | "failed"
- */
-export const updateTaskStatusThunk = createAsyncThunk(
-  "tasks/updateStatus",
-  async ({ taskId, status }, { rejectWithValue }) => {
-    try {
-      const data = await updateTaskStatus(taskId, status);
-      return data.task;
-    } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to update task");
-    }
-  }
-);
-
-// ── Slice ─────────────────────────────────────────────────────────────────────
 const tasksSlice = createSlice({
   name: "tasks",
-
   initialState: {
-    /** @type {Array<{_id:string, title:string, category:string, assigneeId:string, assigneeName:string, dueDate:string, status:"new"|"active"|"done"|"failed"}>} */
-    items:   [],
-    loading: false, // true during any async op
-    error:   null,  // string | null
+    items:     [],
+    isLoading: false,
+    error:     null,
   },
-
   reducers: {
-    // Optimistic local clear (e.g. on logout)
-    clearTasks: (state) => {
-      state.items = [];
+    setTasks(state, action) {
+      state.items = action.payload.map(normaliseTask);
+    },
+    addTask(state, action) {
+      state.items.unshift(normaliseTask(action.payload));
+    },
+    updateTask(state, action) {
+      const idx = state.items.findIndex((t) => t._id === action.payload._id);
+      if (idx !== -1) state.items[idx] = normaliseTask(action.payload);
+    },
+    removeTask(state, action) {
+      state.items = state.items.filter((t) => t._id !== action.payload);
+    },
+    setLoading(state, action) {
+      state.isLoading = action.payload;
+    },
+    setError(state, action) {
+      state.error = action.payload;
+    },
+    clearError(state) {
       state.error = null;
     },
-    // Clear only the error banner
-    clearTaskError: (state) => {
-      state.error = null;
-    },
-  },
-
-  extraReducers: (builder) => {
-    // ── fetchTasksThunk ───────────────────────────────────────────────────────
-    builder
-      .addCase(fetchTasksThunk.pending, (state) => {
-        state.loading = true;
-        state.error   = null;
-      })
-      .addCase(fetchTasksThunk.fulfilled, (state, action) => {
-        state.loading = false;
-        state.items   = action.payload;
-      })
-      .addCase(fetchTasksThunk.rejected, (state, action) => {
-        state.loading = false;
-        state.error   = action.payload;
-      });
-
-    // ── createTaskThunk ───────────────────────────────────────────────────────
-    builder
-      .addCase(createTaskThunk.pending, (state) => {
-        state.loading = true;
-        state.error   = null;
-      })
-      .addCase(createTaskThunk.fulfilled, (state, action) => {
-        state.loading = false;
-        // Prepend so the new task appears at the top of every list
-        state.items.unshift(action.payload);
-      })
-      .addCase(createTaskThunk.rejected, (state, action) => {
-        state.loading = false;
-        state.error   = action.payload;
-      });
-
-    // ── updateTaskStatusThunk ─────────────────────────────────────────────────
-    builder
-      .addCase(updateTaskStatusThunk.pending, (state) => {
-        // Intentionally don't set global loading for a status patch —
-        // the TaskItem handles its own optimistic visual.
-        state.error = null;
-      })
-      .addCase(updateTaskStatusThunk.fulfilled, (state, action) => {
-        const updated = action.payload;
-        const idx = state.items.findIndex((t) => t._id === updated._id);
-        if (idx !== -1) state.items[idx] = updated;
-      })
-      .addCase(updateTaskStatusThunk.rejected, (state, action) => {
-        state.error = action.payload;
-      });
   },
 });
 
-export const { clearTasks, clearTaskError } = tasksSlice.actions;
+export const {
+  setTasks,
+  addTask,
+  updateTask,
+  removeTask,
+  setLoading,
+  setError,
+  clearError,
+} = tasksSlice.actions;
+
 export default tasksSlice.reducer;

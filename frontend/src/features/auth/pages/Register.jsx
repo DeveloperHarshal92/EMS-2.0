@@ -1,5 +1,7 @@
+// src/features/auth/pages/Register.jsx
+// Admin-only employee registration. Redirects to /admin/dashboard on success.
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import "./Register.scss";
 
@@ -10,36 +12,30 @@ const IconUser = () => (
     <path d="M4 20c0-4 3.58-7 8-7s8 3 8 7"/>
   </svg>
 );
-
 const IconMail = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
     <rect x="2" y="4" width="20" height="16" rx="2"/>
     <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
   </svg>
 );
-
 const IconLock = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
     <rect x="3" y="11" width="18" height="11" rx="2"/>
     <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
   </svg>
 );
-
 const IconBriefcase = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
     <rect x="2" y="7" width="20" height="14" rx="2"/>
     <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
-    <line x1="12" y1="12" x2="12" y2="12.01"/>
   </svg>
 );
-
 const IconEye = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
     <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
     <circle cx="12" cy="12" r="3"/>
   </svg>
 );
-
 const IconEyeOff = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
     <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
@@ -48,13 +44,11 @@ const IconEyeOff = () => (
     <line x1="2" y1="2" x2="22" y2="22"/>
   </svg>
 );
-
 const IconCheck = () => (
   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="20 6 9 17 4 12"/>
   </svg>
 );
-
 const IconAlert = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="10"/>
@@ -62,10 +56,15 @@ const IconAlert = () => (
     <line x1="12" y1="16" x2="12.01" y2="16"/>
   </svg>
 );
-
 const IconChevron = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="6 9 12 15 18 9"/>
+  </svg>
+);
+const IconArrowLeft = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="19" y1="12" x2="5" y2="12"/>
+    <polyline points="12 19 5 12 12 5"/>
   </svg>
 );
 
@@ -77,7 +76,7 @@ const getPasswordStrength = (pw) => {
   if (/[A-Z]/.test(pw)) score++;
   if (/[0-9]/.test(pw)) score++;
   if (/[^A-Za-z0-9]/.test(pw)) score++;
-  const map = ["", "weak", "fair", "good", "strong"];
+  const map    = ["", "weak", "fair", "good", "strong"];
   const labels = ["", "Weak", "Fair", "Good", "Strong"];
   return { score, label: labels[score], key: map[score] };
 };
@@ -89,10 +88,7 @@ const PasswordStrength = ({ password }) => {
     <div className="pw-strength">
       <div className="pw-strength__bars">
         {[1, 2, 3, 4].map((n) => (
-          <div
-            key={n}
-            className={`pw-strength__bar${n <= score ? ` pw-strength__bar--${key}` : ""}`}
-          />
+          <div key={n} className={`pw-strength__bar${n <= score ? ` pw-strength__bar--${key}` : ""}`} />
         ))}
       </div>
       <span className={`pw-strength__label pw-strength__label--${key}`}>{label}</span>
@@ -100,24 +96,25 @@ const PasswordStrength = ({ password }) => {
   );
 };
 
-// ─── COMPONENT ────────────────────────────────────────────────────────────────
+// ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const ROLES = [
   { value: "employee", label: "Employee" },
-  { value: "admin", label: "Admin" },
+  { value: "admin",    label: "Admin"    },
 ];
 
+// ─── COMPONENT ────────────────────────────────────────────────────────────────
 const Register = () => {
   const { handleRegister, isLoading, error } = useAuth();
   const navigate = useNavigate();
 
-  const [step, setStep] = useState(1);
+  const [step, setStep]             = useState(1);
   const [showPassword, setShowPassword] = useState(false);
-  const [agreed, setAgreed] = useState(false);
+  const [agreed, setAgreed]         = useState(false);
 
   const [form, setForm] = useState({
     fname: "",
     email: "",
-    role: "",
+    role:  "",
     password: "",
     confirmPassword: "",
   });
@@ -131,24 +128,30 @@ const Register = () => {
     }
   };
 
-  // ─── Step 1 validation
+  // ─── Validation ─────────────────────────────────────────────────────────────
   const validateStep1 = () => {
     const errs = {};
-    if (!form.fname.trim()) errs.fname = "Full name is required";
-    if (!form.email) errs.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(form.email)) errs.email = "Enter a valid email";
-    if (!form.role) errs.role = "Please select a role";
+    if (!form.fname.trim() || form.fname.trim().length < 2)
+      errs.fname = "Full name must be at least 2 characters";
+    if (!form.email)
+      errs.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(form.email))
+      errs.email = "Enter a valid email";
+    if (!form.role)
+      errs.role = "Please select a role";
     return errs;
   };
 
-  // ─── Step 2 validation
   const validateStep2 = () => {
     const errs = {};
-    if (!form.password) errs.password = "Password is required";
-    else if (form.password.length < 6) errs.password = "Minimum 6 characters";
-    if (!form.confirmPassword) errs.confirmPassword = "Please confirm your password";
-    else if (form.password !== form.confirmPassword) errs.confirmPassword = "Passwords don't match";
-    if (!agreed) errs.terms = "You must accept the terms";
+    if (!form.password)
+      errs.password = "Password is required";
+    else if (form.password.length < 6)
+      errs.password = "Minimum 6 characters";
+    if (!form.confirmPassword)
+      errs.confirmPassword = "Please confirm your password";
+    else if (form.password !== form.confirmPassword)
+      errs.confirmPassword = "Passwords don't match";
     return errs;
   };
 
@@ -171,12 +174,15 @@ const Register = () => {
     if (Object.keys(errs).length) { setFieldErrors(errs); return; }
     setFieldErrors({});
     const { confirmPassword, ...payload } = form;
-    await handleRegister(payload);
-    navigate("/");
+    const result = await handleRegister(payload);
+    // On success, redirect Admin back to their dashboard
+    if (result !== undefined || !error) {
+      navigate("/admin/dashboard");
+    }
   };
 
   const steps = [
-    { n: 1, label: "Profile" },
+    { n: 1, label: "Profile"  },
     { n: 2, label: "Security" },
   ];
 
@@ -186,34 +192,50 @@ const Register = () => {
       <span className="register__orb register__orb--2" aria-hidden="true" />
 
       <div className="register__card">
-        {/* Header */}
+        {/* ── Header ── */}
         <div className="register__brand">
-          <span className="register__eyebrow">EMS 3.0</span>
-          <h1 className="register__title">Create account</h1>
-          <p className="register__subtitle">Set up your workspace access</p>
+          {/* Back to dashboard link for Admin context */}
+          <button
+            type="button"
+            className="register__back-link"
+            onClick={() => navigate("/admin/dashboard")}
+            style={{
+              display:        "inline-flex",
+              alignItems:     "center",
+              gap:            "0.35rem",
+              background:     "none",
+              border:         "none",
+              cursor:         "pointer",
+              color:          "var(--text-muted)",
+              fontSize:       "0.78rem",
+              fontWeight:     500,
+              marginBottom:   "0.75rem",
+              padding:        0,
+            }}
+          >
+            <IconArrowLeft /> Back to Dashboard
+          </button>
+
+          <span className="register__eyebrow">EMS 3.0 — Admin</span>
+          <h1 className="register__title">Register Employee</h1>
+          <p className="register__subtitle">Create a new workspace account</p>
         </div>
 
-        {/* Step indicator */}
+        {/* ── Step indicator ── */}
         <div className="register__steps" role="list" aria-label="Registration steps">
           {steps.map((s, i) => (
             <div key={s.n} className="register__step" role="listitem">
-              <div
-                className={`register__step-dot${
-                  step === s.n ? " register__step-dot--active" : ""
-                }${step > s.n ? " register__step-dot--done" : ""}`}
-              >
+              <div className={`register__step-dot${step === s.n ? " register__step-dot--active" : ""}${step > s.n ? " register__step-dot--done" : ""}`}>
                 {step > s.n ? <IconCheck /> : s.n}
               </div>
               {i < steps.length - 1 && (
-                <div
-                  className={`register__step-line${step > s.n ? " register__step-line--done" : ""}`}
-                />
+                <div className={`register__step-line${step > s.n ? " register__step-line--done" : ""}`} />
               )}
             </div>
           ))}
         </div>
 
-        {/* Global error */}
+        {/* ── Global error ── */}
         {error && (
           <div className="register__alert register__alert--error" role="alert">
             <IconAlert />
@@ -232,18 +254,12 @@ const Register = () => {
                   <input
                     id="reg-fname"
                     className={`field__input${fieldErrors.fname ? " field__input--error" : ""}`}
-                    type="text"
-                    name="fname"
-                    placeholder="Alex Johnson"
-                    value={form.fname}
-                    onChange={handleChange}
-                    autoComplete="name"
+                    type="text" name="fname" placeholder="Alex Johnson"
+                    value={form.fname} onChange={handleChange} autoComplete="name"
                   />
                   <span className="field__icon"><IconUser /></span>
                 </div>
-                {fieldErrors.fname && (
-                  <span className="field__error"><IconAlert />{fieldErrors.fname}</span>
-                )}
+                {fieldErrors.fname && <span className="field__error"><IconAlert />{fieldErrors.fname}</span>}
               </div>
 
               {/* Email */}
@@ -253,18 +269,12 @@ const Register = () => {
                   <input
                     id="reg-email"
                     className={`field__input${fieldErrors.email ? " field__input--error" : ""}`}
-                    type="email"
-                    name="email"
-                    placeholder="you@company.com"
-                    value={form.email}
-                    onChange={handleChange}
-                    autoComplete="email"
+                    type="email" name="email" placeholder="employee@company.com"
+                    value={form.email} onChange={handleChange} autoComplete="email"
                   />
                   <span className="field__icon"><IconMail /></span>
                 </div>
-                {fieldErrors.email && (
-                  <span className="field__error"><IconAlert />{fieldErrors.email}</span>
-                )}
+                {fieldErrors.email && <span className="field__error"><IconAlert />{fieldErrors.email}</span>}
               </div>
 
               {/* Role */}
@@ -274,11 +284,9 @@ const Register = () => {
                   <select
                     id="reg-role"
                     className={`field__select${fieldErrors.role ? " field__input--error" : ""}`}
-                    name="role"
-                    value={form.role}
-                    onChange={handleChange}
+                    name="role" value={form.role} onChange={handleChange}
                   >
-                    <option value="" disabled>Select your role</option>
+                    <option value="" disabled>Select role</option>
                     {ROLES.map((r) => (
                       <option key={r.value} value={r.value}>{r.label}</option>
                     ))}
@@ -286,15 +294,11 @@ const Register = () => {
                   <span className="field__icon"><IconBriefcase /></span>
                   <span className="field__chevron"><IconChevron /></span>
                 </div>
-                {fieldErrors.role && (
-                  <span className="field__error"><IconAlert />{fieldErrors.role}</span>
-                )}
+                {fieldErrors.role && <span className="field__error"><IconAlert />{fieldErrors.role}</span>}
               </div>
             </div>
 
-            <button type="submit" className="register__submit--full">
-              Continue
-            </button>
+            <button type="submit" className="register__submit--full">Continue</button>
           </form>
         )}
 
@@ -310,25 +314,16 @@ const Register = () => {
                     id="reg-password"
                     className={`field__input${fieldErrors.password ? " field__input--error" : ""}`}
                     type={showPassword ? "text" : "password"}
-                    name="password"
-                    placeholder="Create a strong password"
-                    value={form.password}
-                    onChange={handleChange}
-                    autoComplete="new-password"
+                    name="password" placeholder="Create a strong password"
+                    value={form.password} onChange={handleChange} autoComplete="new-password"
                   />
                   <span className="field__icon"><IconLock /></span>
-                  <button
-                    type="button"
-                    className="field__toggle"
-                    onClick={() => setShowPassword((v) => !v)}
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                  >
+                  <button type="button" className="field__toggle" onClick={() => setShowPassword(v => !v)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}>
                     {showPassword ? <IconEyeOff /> : <IconEye />}
                   </button>
                 </div>
-                {fieldErrors.password && (
-                  <span className="field__error"><IconAlert />{fieldErrors.password}</span>
-                )}
+                {fieldErrors.password && <span className="field__error"><IconAlert />{fieldErrors.password}</span>}
                 <PasswordStrength password={form.password} />
               </div>
 
@@ -339,47 +334,19 @@ const Register = () => {
                   <input
                     id="reg-confirm"
                     className={`field__input${fieldErrors.confirmPassword ? " field__input--error" : ""}`}
-                    type="password"
-                    name="confirmPassword"
-                    placeholder="Re-enter your password"
-                    value={form.confirmPassword}
-                    onChange={handleChange}
-                    autoComplete="new-password"
+                    type="password" name="confirmPassword" placeholder="Re-enter your password"
+                    value={form.confirmPassword} onChange={handleChange} autoComplete="new-password"
                   />
                   <span className="field__icon"><IconLock /></span>
                 </div>
-                {fieldErrors.confirmPassword && (
-                  <span className="field__error"><IconAlert />{fieldErrors.confirmPassword}</span>
-                )}
+                {fieldErrors.confirmPassword && <span className="field__error"><IconAlert />{fieldErrors.confirmPassword}</span>}
               </div>
 
-              {/* Terms */}
-              <label className="check-field">
-                <input
-                  type="checkbox"
-                  checked={agreed}
-                  onChange={(e) => {
-                    setAgreed(e.target.checked);
-                    if (fieldErrors.terms) setFieldErrors({ ...fieldErrors, terms: "" });
-                  }}
-                />
-                <span className="check-field__box"><IconCheck /></span>
-                <span className="check-field__text">
-                  I agree to the{" "}
-                  <a href="/terms" target="_blank" rel="noreferrer">Terms of Service</a>
-                  {" "}and{" "}
-                  <a href="/privacy" target="_blank" rel="noreferrer">Privacy Policy</a>
-                </span>
-              </label>
-              {fieldErrors.terms && (
-                <span className="field__error"><IconAlert />{fieldErrors.terms}</span>
-              )}
+              {/* Note: Terms removed — Admin-initiated flow doesn't require employee consent here */}
             </div>
 
             <div className="register__nav">
-              <button type="button" className="register__back" onClick={handleBack}>
-                Back
-              </button>
+              <button type="button" className="register__back" onClick={handleBack}>Back</button>
               <button type="submit" className="register__submit" disabled={isLoading}>
                 {isLoading && <span className="spinner" aria-hidden="true" />}
                 {isLoading ? "Creating…" : "Create account"}
@@ -387,12 +354,6 @@ const Register = () => {
             </div>
           </form>
         )}
-
-        {/* Footer */}
-        <p className="register__footer">
-          Already have an account?{" "}
-          <Link to="/login">Sign in</Link>
-        </p>
       </div>
     </div>
   );

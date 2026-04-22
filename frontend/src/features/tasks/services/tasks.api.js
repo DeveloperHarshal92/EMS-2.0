@@ -1,29 +1,64 @@
-// src/features/tasks/service/tasks.api.js
+// src/features/tasks/services/tasks.api.js
 import axios from "axios";
 
-// ── Shared Axios instance (mirrors auth.api.js pattern) ──────────────────────
 const api = axios.create({
-  baseURL: "http://localhost:3000",
+  baseURL:         "http://localhost:3000",
   withCredentials: true,
 });
 
-// ── Fetch all tasks (optionally filtered by assigneeId) ──────────────────────
-export async function fetchAllTasks({ assigneeId } = {}) {
-  const params = assigneeId ? { assigneeId } : {};
-  const response = await api.get("/api/tasks", { params });
-  return response.data; // { tasks: Task[] }
+/**
+ * Create a new task (Admin only).
+ * Payload shape matches tasks.model.js:
+ *   { title, description, date, category, assignedTo }
+ */
+export async function createTask({ title, description, date, category, assignedTo }) {
+  const res = await api.post("/api/tasks", {
+    title,
+    description,   // ← required by tasks.model.js
+    date,
+    category,
+    assignedTo,
+  });
+  return res.data;
 }
 
-// ── Create a new task ────────────────────────────────────────────────────────
-// payload: { title, category, assigneeId, dueDate }
-export async function createTask(payload) {
-  const response = await api.post("/api/tasks", payload);
-  return response.data; // { task: Task }
+/**
+ * Fetch all tasks (Admin view).
+ */
+export async function fetchAllTasks() {
+  const res = await api.get("/api/tasks");
+  return res.data;
 }
 
-// ── Update a task's status ────────────────────────────────────────────────────
-// status: "new" | "active" | "done" | "failed"
-export async function updateTaskStatus(taskId, status) {
-  const response = await api.patch(`/api/tasks/${taskId}/status`, { status });
-  return response.data; // { task: Task }
+/**
+ * Fetch tasks assigned to the logged-in employee.
+ */
+export async function fetchMyTasks() {
+  const res = await api.get("/api/tasks/my");
+  return res.data;
+}
+
+/**
+ * Update a task's status.
+ * status: "active" | "completed" | "failed" | "newTask"
+ */
+export async function updateTaskStatus(id, status) {
+  const res = await api.patch(`/api/tasks/${id}/status`, { status });
+  return res.data;
+}
+
+/**
+ * Update task details (Admin edit).
+ */
+export async function updateTask(id, { title, description, date, category }) {
+  const res = await api.put(`/api/tasks/${id}`, { title, description, date, category });
+  return res.data;
+}
+
+/**
+ * Delete a task.
+ */
+export async function deleteTask(id) {
+  const res = await api.delete(`/api/tasks/${id}`);
+  return res.data;
 }

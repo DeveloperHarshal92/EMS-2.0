@@ -28,6 +28,15 @@ const I = {
       <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
     </svg>
   ),
+  // "Add Employee" — UserPlus icon
+  UserPlus: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <line x1="19" y1="8" x2="19" y2="14" />
+      <line x1="22" y1="11" x2="16" y2="11" />
+    </svg>
+  ),
   Tasks: () => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
       <path d="M9 11l3 3L22 4" />
@@ -61,18 +70,12 @@ const I = {
       <polyline points="15 18 9 12 15 6" />
     </svg>
   ),
-  Bell: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" />
-    </svg>
-  ),
   Report: () => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
       <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
       <polyline points="14 2 14 8 20 8" />
       <line x1="16" y1="13" x2="8" y2="13" />
       <line x1="16" y1="17" x2="8" y2="17" />
-      <polyline points="10 9 9 9 8 9" />
     </svg>
   ),
   MyTask: () => (
@@ -83,27 +86,35 @@ const I = {
   ),
 };
 
-// ─── Nav configs by role ──────────────────────────────────────────────────────
+// ─── Nav configs ──────────────────────────────────────────────────────────────
 const ADMIN_NAV = [
   { section: "Overview" },
-  { to: "/admin/dashboard",  icon: I.Dashboard, label: "Dashboard" },
-  { to: "/admin/employees",  icon: I.Users,     label: "Employees", badge: null },
-  { to: "/admin/tasks",      icon: I.Tasks,     label: "Tasks",    badge: "12" },
+  { to: "/admin/dashboard",  icon: I.Dashboard, label: "Dashboard"   },
+  { to: "/admin/employees",  icon: I.Users,     label: "Employees"   },
+  { to: "/admin/tasks",      icon: I.Tasks,     label: "Tasks",  badge: "12" },
+  { section: "People" },
+  /**
+   * "Add Employee" — navigates to /register (admin-protected).
+   * Uses a special `action` key so we can trigger useNavigate
+   * instead of rendering a NavLink (avoids active-state issues on
+   * a route the admin won't "be on" persistently).
+   */
+  { action: "add-employee", icon: I.UserPlus, label: "Add Employee", highlight: true },
   { section: "Insights" },
-  { to: "/admin/analytics",  icon: I.Analytics, label: "Analytics" },
-  { to: "/admin/reports",    icon: I.Report,    label: "Reports" },
-  { to: "/admin/calendar",   icon: I.Calendar,  label: "Calendar" },
+  { to: "/admin/analytics",  icon: I.Analytics, label: "Analytics"   },
+  { to: "/admin/reports",    icon: I.Report,    label: "Reports"     },
+  { to: "/admin/calendar",   icon: I.Calendar,  label: "Calendar"    },
   { section: "System" },
-  { to: "/admin/settings",   icon: I.Settings,  label: "Settings" },
+  { to: "/admin/settings",   icon: I.Settings,  label: "Settings"    },
 ];
 
 const EMP_NAV = [
   { section: "Workspace" },
-  { to: "/employee/dashboard", icon: I.Dashboard, label: "Dashboard" },
+  { to: "/employee/dashboard", icon: I.Dashboard, label: "Dashboard"  },
   { to: "/employee/my-tasks",  icon: I.MyTask,    label: "My Tasks", badge: "3" },
-  { to: "/employee/calendar",  icon: I.Calendar,  label: "Calendar" },
+  { to: "/employee/calendar",  icon: I.Calendar,  label: "Calendar"  },
   { section: "Account" },
-  { to: "/employee/settings",  icon: I.Settings,  label: "Settings" },
+  { to: "/employee/settings",  icon: I.Settings,  label: "Settings"  },
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -115,6 +126,10 @@ const Sidebar = ({ collapsed, onToggle, role }) => {
   const initials = user?.fname
     ? user.fname.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()
     : "U";
+
+  const handleAction = (action) => {
+    if (action === "add-employee") navigate("/register");
+  };
 
   return (
     <aside className={`sidebar${collapsed ? " collapsed" : ""}`}>
@@ -144,6 +159,7 @@ const Sidebar = ({ collapsed, onToggle, role }) => {
       {/* Nav */}
       <nav className="sidebar__nav">
         {nav.map((item, idx) => {
+          // Section header
           if (item.section) {
             return (
               <div key={idx} className="sidebar__section-title">
@@ -153,22 +169,56 @@ const Sidebar = ({ collapsed, onToggle, role }) => {
           }
 
           const Icon = item.icon;
+
+          // Action button (e.g. Add Employee)
+          if (item.action) {
+            return (
+              <div
+                key={idx}
+                className="sidebar__nav-item sidebar__nav-item--action"
+                onClick={() => handleAction(item.action)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === "Enter" && handleAction(item.action)}
+                data-tooltip={collapsed ? item.label : undefined}
+                style={{
+                  background:  item.highlight ? "var(--accent-glow)" : undefined,
+                  border:      item.highlight ? "1px solid var(--accent)" : undefined,
+                  borderRadius: 8,
+                  cursor: "pointer",
+                }}
+              >
+                <span
+                  className="sidebar__nav-icon"
+                  style={{ color: item.highlight ? "var(--accent)" : undefined }}
+                >
+                  <Icon />
+                </span>
+                {!collapsed && (
+                  <span
+                    className="sidebar__label"
+                    style={{ color: item.highlight ? "var(--accent)" : undefined, fontWeight: item.highlight ? 600 : undefined }}
+                  >
+                    {item.label}
+                  </span>
+                )}
+              </div>
+            );
+          }
+
+          // Standard NavLink
           return (
             <NavLink
               key={idx}
               to={item.to}
-              className={({ isActive }) =>
-                `sidebar__nav-item${isActive ? " active" : ""}`
-              }
+              className={({ isActive }) => `sidebar__nav-item${isActive ? " active" : ""}`}
               data-tooltip={collapsed ? item.label : undefined}
             >
               <span className="sidebar__nav-icon"><Icon /></span>
               {!collapsed && (
                 <>
                   <span className="sidebar__label">{item.label}</span>
-                  {item.badge && (
-                    <span className="sidebar__badge">{item.badge}</span>
-                  )}
+                  {item.badge && <span className="sidebar__badge">{item.badge}</span>}
                 </>
               )}
             </NavLink>
@@ -179,18 +229,13 @@ const Sidebar = ({ collapsed, onToggle, role }) => {
       {/* Footer */}
       <div className="sidebar__footer">
         {/* Profile */}
-        <div
-          className="sidebar__nav-item"
-          style={{ pointerEvents: "none", opacity: 0.7 }}
-        >
-          <span
-            style={{
-              width: 17, height: 17, borderRadius: 6,
-              background: "linear-gradient(135deg, var(--accent), #7c3aed)",
-              display: "inline-flex", alignItems: "center", justifyContent: "center",
-              fontSize: "0.6rem", fontWeight: 700, color: "#fff", flexShrink: 0,
-            }}
-          >
+        <div className="sidebar__nav-item" style={{ pointerEvents: "none", opacity: 0.7 }}>
+          <span style={{
+            width: 17, height: 17, borderRadius: 6,
+            background: "linear-gradient(135deg, var(--accent), #7c3aed)",
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            fontSize: "0.6rem", fontWeight: 700, color: "#fff", flexShrink: 0,
+          }}>
             {initials}
           </span>
           {!collapsed && (

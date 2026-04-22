@@ -6,16 +6,21 @@ import {
   getUserDetails,
   logoutUser,
 } from "../controllers/users.controller.js";
-import { authUser } from "../middlewares/auth.middlware.js";
+import { authorizeRole, authUser } from "../middlewares/auth.middlware.js";
 
 const userRouter = Router();
 
 /**
  * @route POST /api/auth/register
- * @desc Register a new user
- * @access Public
+ * @desc  Register a new user — Admin only
+ * @access Protected (Admin)
  */
-userRouter.post("/register", validateLogin, registerUser);
+userRouter.post(
+  "/register",
+  validateLogin,
+  authorizeRole("admin"),
+  registerUser,
+);
 
 /**
  * @route POST /api/auth/login

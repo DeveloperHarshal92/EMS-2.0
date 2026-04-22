@@ -103,6 +103,14 @@ const I = {
       <line x1="12" y1="15" x2="12" y2="3"/>
     </svg>
   ),
+  AlignLeft: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <line x1="21" y1="10" x2="3" y2="10"/>
+      <line x1="21" y1="6"  x2="3" y2="6"/>
+      <line x1="21" y1="14" x2="3" y2="14"/>
+      <line x1="21" y1="18" x2="9" y2="18"/>
+    </svg>
+  ),
 };
 
 // ─── Animation variants ───────────────────────────────────────────────────────
@@ -125,7 +133,7 @@ const modalCard = {
   exit:   { opacity: 0, y: 16, scale: 0.97, transition: { duration: 0.2 } },
 };
 
-// ─── Static mock data (replaces live data until API is connected) ─────────────
+// ─── Static mock data ─────────────────────────────────────────────────────────
 const EMPLOYEES_MOCK = [
   { _id: "e1", fname: "Aarav Sharma",  role: "Engineer"  },
   { _id: "e2", fname: "Riya Verma",    role: "Designer"  },
@@ -135,31 +143,31 @@ const EMPLOYEES_MOCK = [
 ];
 
 const TEAM_STATS = [
-  { name: "Aarav Sharma",  role: "Engineer",   tasks: 4, done: 3, status: "active"  },
-  { name: "Riya Verma",    role: "Designer",   tasks: 6, done: 4, status: "active"  },
-  { name: "Kabir Mehta",   role: "QA",         tasks: 3, done: 1, status: "leave"   },
-  { name: "Neha Kulkarni", role: "DevOps",     tasks: 5, done: 5, status: "active"  },
-  { name: "Arjun Singh",   role: "Marketing",  tasks: 7, done: 2, status: "offline" },
+  { name: "Aarav Sharma",  role: "Engineer",  tasks: 4, done: 3, status: "active"  },
+  { name: "Riya Verma",    role: "Designer",  tasks: 6, done: 4, status: "active"  },
+  { name: "Kabir Mehta",   role: "QA",        tasks: 3, done: 1, status: "leave"   },
+  { name: "Neha Kulkarni", role: "DevOps",    tasks: 5, done: 5, status: "active"  },
+  { name: "Arjun Singh",   role: "Marketing", tasks: 7, done: 2, status: "offline" },
 ];
 
 const WEEK_ACTIVITY = [42, 68, 55, 80, 63, 90, 74];
 const DAYS          = ["M", "T", "W", "T", "F", "S", "S"];
+const CATEGORIES    = ["Dev", "Design", "QA", "DevOps", "Marketing", "Reporting", "Comms", "Docs"];
 
 // ─── Assign Task Modal ────────────────────────────────────────────────────────
-const CATEGORIES = ["Dev", "Design", "QA", "DevOps", "Marketing", "Reporting", "Comms", "Docs"];
-
 const EMPTY_FORM = {
-  title:      "",
-  category:   "",
-  assigneeId: "",
-  dueDate:    "",
+  title:       "",
+  description: "",   // ← NEW required field matching tasks.model.js
+  category:    "",
+  assigneeId:  "",
+  dueDate:     "",
 };
 
 const AssignTaskModal = ({ onClose }) => {
   const { createNewTask, loading, error, dismissError } = useTasks();
-  const [form,       setForm]       = useState(EMPTY_FORM);
-  const [fieldErrs,  setFieldErrs]  = useState({});
-  const [submitted,  setSubmitted]  = useState(false);
+  const [form,      setForm]      = useState(EMPTY_FORM);
+  const [fieldErrs, setFieldErrs] = useState({});
+  const [submitted, setSubmitted] = useState(false);
   const titleRef = useRef(null);
 
   // Focus first field on mount
@@ -174,10 +182,19 @@ const AssignTaskModal = ({ onClose }) => {
 
   const validate = () => {
     const errs = {};
-    if (!form.title.trim())   errs.title      = "Task title is required";
-    if (!form.category)        errs.category   = "Select a category";
-    if (!form.assigneeId)      errs.assigneeId = "Select an assignee";
-    if (!form.dueDate)         errs.dueDate    = "Due date is required";
+    if (!form.title.trim())
+      errs.title = "Task title is required";
+    // ← NEW: description validation mirrors backend (required, min 10 chars)
+    if (!form.description.trim())
+      errs.description = "Description is required";
+    else if (form.description.trim().length < 10)
+      errs.description = "Description must be at least 10 characters";
+    if (!form.category)
+      errs.category = "Select a category";
+    if (!form.assigneeId)
+      errs.assigneeId = "Select an assignee";
+    if (!form.dueDate)
+      errs.dueDate = "Due date is required";
     return errs;
   };
 
@@ -194,15 +211,19 @@ const AssignTaskModal = ({ onClose }) => {
     const errs = validate();
     if (Object.keys(errs).length) { setFieldErrs(errs); return; }
 
-    const assignee   = EMPLOYEES_MOCK.find((em) => em._id === form.assigneeId);
+    const assignee = EMPLOYEES_MOCK.find((em) => em._id === form.assigneeId);
     const task = await createNewTask({
-      ...form,
+      title:        form.title.trim(),
+      description:  form.description.trim(),   // ← passed to API
+      category:     form.category,
+      assignedTo:   form.assigneeId,           // backend expects assignedTo (_id)
+      date:         form.dueDate,              // backend field is `date`
       assigneeName: assignee?.fname ?? "Unknown",
     });
 
     if (task) {
       setSubmitted(true);
-      setTimeout(onClose, 1200); // brief success pause then close
+      setTimeout(onClose, 1200);
     }
   };
 
@@ -246,6 +267,7 @@ const AssignTaskModal = ({ onClose }) => {
       {/* Form */}
       {!submitted && (
         <form className="modal__form" onSubmit={handleSubmit} noValidate>
+
           {/* Title */}
           <div className="modal__field">
             <label className="modal__label" htmlFor="task-title">Task title</label>
@@ -260,7 +282,41 @@ const AssignTaskModal = ({ onClose }) => {
               onChange={handleChange}
               autoComplete="off"
             />
-            {fieldErrs.title && <span className="modal__err"><I.Alert />{fieldErrs.title}</span>}
+            {fieldErrs.title && (
+              <span className="modal__err"><I.Alert />{fieldErrs.title}</span>
+            )}
+          </div>
+
+          {/* ── Description (NEW) ── */}
+          <div className="modal__field">
+            <label className="modal__label" htmlFor="task-desc">
+              Description
+            </label>
+            <div className="modal__textarea-wrap">
+              {/* icon aligned to top of textarea */}
+              <span className="modal__textarea-icon">
+                <I.AlignLeft />
+              </span>
+              <textarea
+                id="task-desc"
+                name="description"
+                className={`modal__textarea${fieldErrs.description ? " modal__input--error" : ""}`}
+                placeholder="Describe the task, expected outcome, and any key constraints…"
+                value={form.description}
+                onChange={handleChange}
+                maxLength={800}
+                rows={3}
+              />
+            </div>
+            <div className="modal__field-footer">
+              {fieldErrs.description
+                ? <span className="modal__err"><I.Alert />{fieldErrs.description}</span>
+                : <span />
+              }
+              <span className="modal__char-count">
+                {form.description.length}/800
+              </span>
+            </div>
           </div>
 
           {/* Category + Assignee row */}
@@ -279,7 +335,9 @@ const AssignTaskModal = ({ onClose }) => {
                   <option key={c} value={c}>{c}</option>
                 ))}
               </select>
-              {fieldErrs.category && <span className="modal__err"><I.Alert />{fieldErrs.category}</span>}
+              {fieldErrs.category && (
+                <span className="modal__err"><I.Alert />{fieldErrs.category}</span>
+              )}
             </div>
 
             <div className="modal__field">
@@ -296,7 +354,9 @@ const AssignTaskModal = ({ onClose }) => {
                   <option key={em._id} value={em._id}>{em.fname}</option>
                 ))}
               </select>
-              {fieldErrs.assigneeId && <span className="modal__err"><I.Alert />{fieldErrs.assigneeId}</span>}
+              {fieldErrs.assigneeId && (
+                <span className="modal__err"><I.Alert />{fieldErrs.assigneeId}</span>
+              )}
             </div>
           </div>
 
@@ -312,7 +372,9 @@ const AssignTaskModal = ({ onClose }) => {
               onChange={handleChange}
               min={new Date().toISOString().split("T")[0]}
             />
-            {fieldErrs.dueDate && <span className="modal__err"><I.Alert />{fieldErrs.dueDate}</span>}
+            {fieldErrs.dueDate && (
+              <span className="modal__err"><I.Alert />{fieldErrs.dueDate}</span>
+            )}
           </div>
 
           {/* Actions */}
@@ -331,18 +393,26 @@ const AssignTaskModal = ({ onClose }) => {
   );
 };
 
-// ─── Generate Report placeholder ──────────────────────────────────────────────
+// ─── Generate Report Modal ────────────────────────────────────────────────────
 const ReportModal = ({ onClose }) => {
   const { tasks, openCount, doneCount } = useTasks();
-  const total    = tasks.length;
+  const total     = tasks.length;
   const failCount = tasks.filter((t) => t.status === "failed").length;
 
   const handleExport = () => {
     const rows = [
-      ["Title", "Assignee", "Category", "Due Date", "Status"],
-      ...tasks.map((t) => [t.title, t.assigneeName, t.category, t.dueDate, t.status]),
+      ["Title", "Description", "Assignee", "Category", "Due Date", "Status"],
+      ...tasks.map((t) => [
+        t.title,
+        // wrap description in quotes to handle commas inside the text
+        `"${(t.description || "").replace(/"/g, '""')}"`,
+        t.assigneeName,
+        t.category,
+        t.dueDate,
+        t.status,
+      ]),
     ];
-    const csv = rows.map((r) => r.join(",")).join("\n");
+    const csv  = rows.map((r) => r.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement("a");
@@ -359,15 +429,17 @@ const ReportModal = ({ onClose }) => {
           <div className="modal__title">Generate Report</div>
           <div className="modal__sub">Export task analytics as CSV</div>
         </div>
-        <button className="modal__close" onClick={onClose} aria-label="Close"><I.X /></button>
+        <button className="modal__close" onClick={onClose} aria-label="Close">
+          <I.X />
+        </button>
       </div>
 
       <div className="report-grid">
         {[
-          { label: "Total tasks",  value: total,      color: "var(--accent)"        },
-          { label: "Open",         value: openCount,  color: "var(--status-active)" },
-          { label: "Completed",    value: doneCount,  color: "var(--status-done)"   },
-          { label: "Failed",       value: failCount,  color: "var(--status-failed)" },
+          { label: "Total tasks", value: total,      color: "var(--accent)"        },
+          { label: "Open",        value: openCount,  color: "var(--status-active)" },
+          { label: "Completed",   value: doneCount,  color: "var(--status-done)"   },
+          { label: "Failed",      value: failCount,  color: "var(--status-failed)" },
         ].map(({ label, value, color }) => (
           <div key={label} className="report-grid__cell" style={{ "--cell-color": color }}>
             <div className="report-grid__value" style={{ color }}>{value}</div>
@@ -377,7 +449,9 @@ const ReportModal = ({ onClose }) => {
       </div>
 
       <div className="modal__actions" style={{ marginTop: "1.5rem" }}>
-        <button type="button" className="btn btn--ghost btn--sm" onClick={onClose}>Cancel</button>
+        <button type="button" className="btn btn--ghost btn--sm" onClick={onClose}>
+          Cancel
+        </button>
         <button
           type="button"
           className="btn btn--primary btn--sm"
@@ -393,9 +467,9 @@ const ReportModal = ({ onClose }) => {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 const AdminDashboard = () => {
-  const [collapsed,   setCollapsed]   = useState(false);
-  const [modal,       setModal]       = useState(null); // "assign" | "report" | null
-  const user = useSelector((s) => s.auth.user);
+  const [collapsed, setCollapsed] = useState(false);
+  const [modal,     setModal]     = useState(null); // "assign" | "report" | null
+  const user     = useSelector((s) => s.auth.user);
   const navigate = useNavigate();
 
   const { tasks, loading: tasksLoading, error: tasksError, loadTasks, openCount } = useTasks();
@@ -405,14 +479,14 @@ const AdminDashboard = () => {
 
   const maxBar = Math.max(...WEEK_ACTIVITY);
 
-  // ── Stat cards (open tasks count now comes from Redux) ─────────────────────
+  // ── Stat cards ──────────────────────────────────────────────────────────────
   const STATS = [
     {
       label: "Total Workforce",
       value: String(TEAM_STATS.length),
       delta: "+2 this month",
       trend: "up",
-      icon: I.Users,
+      icon:  I.Users,
       accent: "#00d4ff",
     },
     {
@@ -420,7 +494,7 @@ const AdminDashboard = () => {
       value: tasksLoading ? "…" : String(openCount || WEEK_ACTIVITY.length),
       delta: "12 overdue",
       trend: "down",
-      icon: I.Tasks,
+      icon:  I.Tasks,
       accent: "#f59e0b",
     },
     {
@@ -428,7 +502,7 @@ const AdminDashboard = () => {
       value: "5",
       delta: "Pending review",
       trend: "neutral",
-      icon: I.Leave,
+      icon:  I.Leave,
       accent: "#7c3aed",
     },
     {
@@ -436,40 +510,37 @@ const AdminDashboard = () => {
       value: "99%",
       delta: "All services up",
       trend: "up",
-      icon: I.Health,
+      icon:  I.Health,
       accent: "#10b981",
     },
   ];
 
-  // ── Quick action definitions ───────────────────────────────────────────────
+  // ── Quick actions ────────────────────────────────────────────────────────────
   const QUICK_ACTIONS = [
     {
-      icon:    I.ClipAdd,
-      text:    "Assign New Task",
-      sub:     "Delegate work to an employee",
-      action:  () => setModal("assign"),
-      variant: "default",
+      icon:   I.ClipAdd,
+      text:   "Assign New Task",
+      sub:    "Delegate work to an employee",
+      action: () => setModal("assign"),
     },
     {
-      icon:    I.Users,
-      text:    "Team Overview",
-      sub:     "Browse employee directory",
-      action:  () => navigate("/admin/employees"),
-      variant: "default",
+      icon:   I.Users,
+      text:   "Team Overview",
+      sub:    "Browse employee directory",
+      action: () => navigate("/admin/employees"),
     },
     {
-      icon:    I.Report,
-      text:    "Generate Report",
-      sub:     "Export task analytics as CSV",
-      action:  () => setModal("report"),
-      variant: "default",
+      icon:   I.Report,
+      text:   "Generate Report",
+      sub:    "Export task analytics as CSV",
+      action: () => setModal("report"),
     },
     {
-      icon:    I.UserPlus,
-      text:    "Add Employee",
-      sub:     "Onboard a new team member",
-      action:  () => navigate("/admin/employees"),
-      variant: "default",
+      icon:   I.UserPlus,
+      text:   "Add Employee",
+      sub:    "Onboard a new team member",
+      // ← Fixed: navigates to /register (admin-protected), not /admin/employees
+      action: () => navigate("/register"),
     },
   ];
 
@@ -652,7 +723,7 @@ const AdminDashboard = () => {
                   </div>
                 </div>
 
-                {/* ── Quick Actions panel ────────────────────────────────── */}
+                {/* Quick Actions panel */}
                 <div className="panel">
                   <div className="panel__head">
                     <div>
@@ -680,16 +751,12 @@ const AdminDashboard = () => {
                             whileHover={{ x: 2 }}
                             transition={{ duration: 0.15 }}
                           >
-                            <div className="qa-list__icon">
-                              <Icon />
-                            </div>
+                            <div className="qa-list__icon"><Icon /></div>
                             <div style={{ flex: 1 }}>
                               <div className="qa-list__text">{a.text}</div>
                               <div className="qa-list__sub">{a.sub}</div>
                             </div>
-                            <span className="qa-list__arrow">
-                              <I.ChevronRight />
-                            </span>
+                            <span className="qa-list__arrow"><I.ChevronRight /></span>
                           </motion.div>
                         );
                       })}
@@ -699,7 +766,7 @@ const AdminDashboard = () => {
               </motion.div>
             </motion.div>
 
-            {/* ── Recent Tasks panel ────────────────────────────────────── */}
+            {/* ── Recent Tasks panel ─────────────────────────────────────── */}
             <motion.div
               className="panel"
               variants={fadeUpItem}
@@ -743,10 +810,9 @@ const AdminDashboard = () => {
                 )}
               </AnimatePresence>
 
-              {/* Task list — live from Redux, falls back to mock skeleton */}
+              {/* Task list */}
               <div className="task-list">
                 {tasksLoading ? (
-                  // Skeleton rows while loading
                   Array.from({ length: 5 }).map((_, i) => (
                     <div key={i} className="task-row" style={{ gap: "1rem" }}>
                       <div className="skeleton" style={{ width: 8, height: 8, borderRadius: "50%", flexShrink: 0 }} />
@@ -762,7 +828,6 @@ const AdminDashboard = () => {
                     <TaskItem key={task._id} task={task} index={i} animate />
                   ))
                 ) : (
-                  // Empty state
                   <div className="panel__empty" style={{ padding: "2.5rem 1.5rem" }}>
                     <div style={{ marginBottom: "0.5rem", opacity: 0.4, fontSize: "1.75rem" }}>
                       <I.Tasks />
@@ -785,7 +850,7 @@ const AdminDashboard = () => {
         </div>{/* ds__main */}
       </div>{/* ds */}
 
-      {/* ── Modals (portalled via AnimatePresence) ─────────────────────────── */}
+      {/* ── Modals ─────────────────────────────────────────────────────────── */}
       <AnimatePresence>
         {modal && (
           <motion.div
@@ -794,10 +859,7 @@ const AdminDashboard = () => {
             initial="hidden"
             animate="show"
             exit="exit"
-            onClick={(e) => {
-              // Close when clicking backdrop
-              if (e.target === e.currentTarget) setModal(null);
-            }}
+            onClick={(e) => { if (e.target === e.currentTarget) setModal(null); }}
           >
             <motion.div variants={modalCard} className="modal__wrap">
               {modal === "assign" && (
