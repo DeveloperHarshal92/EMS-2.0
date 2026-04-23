@@ -8,7 +8,7 @@ const taskSchema = new mongoose.Schema({
   description: {
     type: String,
     required: [true, "Description is required"],
-    trim : true,
+    trim: true,
   },
   date: {
     type: String,
@@ -16,7 +16,17 @@ const taskSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    required: [true, "Catagory is required"],
+    enum: [
+      "Dev",
+      "Design",
+      "QA",
+      "DevOps",
+      "Marketing",
+      "Reporting",
+      "Comms",
+      "Docs",
+    ],
+    default: "Dev",
   },
   active: {
     type: Boolean,

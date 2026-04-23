@@ -254,7 +254,7 @@ const TaskForm = ({
               </span>
             </div>
           </div>
-
+          
           {/* Category + Assignee */}
           <div className="modal__row">
             <div className="modal__field">
